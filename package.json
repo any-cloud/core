@@ -2,7 +2,7 @@
   "name": "@any-cloud/core",
   "version": "1.0.0",
   "description": "core library for runtime abstractions",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "repository": "git@github.com:any-cloud/core.git",
   "author": "Bryan Goldstein",
   "license": "MIT",

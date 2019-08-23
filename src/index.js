@@ -1,7 +1,7 @@
-const delegateToPlugin = (name) => {
-  const handler = require(`${process.cwd()}/node_modules/${currentPlugin}/scripts/http`)
-    .default.handler;
-  return handler(argv);
-};
+import * as allUtils from "./utils";
 
-export const queue = delegateToPlugin("queue");
+const { requirePluginLib } = allUtils;
+
+export const queue = requirePluginLib("queue");
+
+export const utils = allUtils;
