@@ -1,0 +1,21 @@
+{
+  "name": "@any-cloud/core",
+  "version": "1.0.0",
+  "description": "core library for runtime abstractions",
+  "main": "src/index.js",
+  "repository": "git@github.com:any-cloud/core.git",
+  "author": "Bryan Goldstein",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "babel src/ --out-dir lib/",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2"
+  }
+}
