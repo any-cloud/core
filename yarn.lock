@@ -1741,6 +1741,11 @@ for-in@^1.0.2:
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
   integrity sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=
 
+foreachasync@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/foreachasync/-/foreachasync-3.0.0.tgz#5502987dc8714be3392097f32e0071c9dee07cf6"
+  integrity sha1-VQKYfchxS+M5IJfzLgBxyd7gfPY=
+
 forever-agent@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
@@ -2678,6 +2683,14 @@ jsesc@~0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
   integrity sha1-597mbjXW/Bb3EP6R1c9p9w8IkR0=
+
+json-fs-db@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/json-fs-db/-/json-fs-db-0.1.3.tgz#5918de92496b8276bd782868ee12dfaed6134f99"
+  integrity sha512-YzVaNq2MUYij2iYg9sP3okTd6wDYu5eAdA8FTnv8B68UMSK3RYSJbOVdVh4i26wDwNulHt6qk2CpuQmDQStTbw==
+  dependencies:
+    try-get "^1.0.0"
+    walk "^2.3.14"
 
 json-parse-better-errors@^1.0.1:
   version "1.0.2"
@@ -4035,6 +4048,11 @@ trim-right@^1.0.1:
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
 
+try-get@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/try-get/-/try-get-1.0.0.tgz#3161ab319f7b535b4fa797f3b6da537eb29fead7"
+  integrity sha1-MWGrMZ97U1tPp5fzttpTfrKf6tc=
+
 tunnel-agent@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/tunnel-agent/-/tunnel-agent-0.6.0.tgz#27a5dea06b36b04a0a9966774b290868f0fc40fd"
@@ -4166,6 +4184,13 @@ w3c-hr-time@^1.0.1:
   integrity sha1-gqwr/2PZUOqeMYmlimViX+3xkEU=
   dependencies:
     browser-process-hrtime "^0.1.2"
+
+walk@^2.3.14:
+  version "2.3.14"
+  resolved "https://registry.yarnpkg.com/walk/-/walk-2.3.14.tgz#60ec8631cfd23276ae1e7363ce11d626452e1ef3"
+  integrity sha512-5skcWAUmySj6hkBdH6B6+3ddMjVQYH5Qy9QGbPmN8kVmLteXk+yVXg+yfk1nbX30EYakahLrr8iPcCxJQSCBeg==
+  dependencies:
+    foreachasync "^3.0.0"
 
 walker@^1.0.7, walker@~1.0.5:
   version "1.0.7"

@@ -20,6 +20,7 @@
     "prettier": "^1.18.2"
   },
   "dependencies": {
-    "@babel/runtime": "^7.5.5"
+    "@babel/runtime": "^7.5.5",
+    "json-fs-db": "^0.1.3"
   }
 }
