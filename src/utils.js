@@ -1,11 +1,15 @@
 import fs from "fs";
 
+export const toPluginName = plugin => `@any-cloud/${plugin}`;
+
 export const currentPlugin = async () => {
-  return `@any-cloud/${await get("anyCloud.plugin")}`;
+  const { get } = configDB();
+  return toPluginName(await get("anyCloud.plugin"));
 };
 
-export const setCurrentPlugin = async plugin => {
-  await set("anyCloud.plugin", plugin);
+export const setCurrentPlugin = plugin => {
+  const { set } = configDB();
+  return set("anyCloud.plugin", plugin);
 };
 
 export const pathToPlugin = pluginName =>
@@ -31,5 +35,3 @@ export const configDB = () => {
   fs.mkdirSync(configRoot, { recursive: true });
   return require("json-fs-db")(configRoot);
 };
-
-const { get, set } = configDB();
