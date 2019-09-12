@@ -31,6 +31,10 @@ export const requirePluginLib = name => {
   return require(libPath(pathToPlugin(currentPluginSync()), name));
 };
 
+export const currentPluginCLIHandlerPath = (name = "") => {
+  return cliHandlerPath(pathToPlugin(currentPluginSync()), name);
+};
+
 export const requireCLIHandler = async name => {
   return require(cliHandlerPath(pathToPlugin(await currentPlugin()), name))
     .default.handler;
