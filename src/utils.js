@@ -10,7 +10,24 @@ export const currentPlugin = async () => {
 export const currentPluginSync = () => {
   const configRoot = pathToPlugin(".cache");
   fs.mkdirSync(configRoot, { recursive: true });
-  return toPluginName(require(path.join(configRoot, "anyCloud")).plugin);
+
+  let currentConfig;
+  try {
+    currentConfig = require(path.join(configRoot, "anyCloud"));
+  } catch {
+    currentConfig = {
+      plugin: "local"
+    };
+  }
+  return toPluginName(currentConfig.plugin);
+};
+
+export const applicationDirectory = () => {
+  if (fs.existsSync(path.join(process.cwd(), "AC_APPLICATION_CODE"))) {
+    return path.join(process.cwd(), "AC_APPLICATION_CODE");
+  } else {
+    return process.cwd();
+  }
 };
 
 export const setCurrentPlugin = plugin => {
@@ -19,7 +36,7 @@ export const setCurrentPlugin = plugin => {
 };
 
 export const pathToPlugin = pluginName =>
-  `${process.cwd()}/node_modules/${pluginName}`;
+  `${applicationDirectory()}/node_modules/${pluginName}`;
 
 export const cliHandlerPath = (pathToPlugin, handlerName) =>
   `${pathToPlugin}/lib/cli/${handlerName}`;
