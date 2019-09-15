@@ -22,21 +22,20 @@ export const currentPluginSync = () => {
   return toPluginName(currentConfig.plugin);
 };
 
-export const applicationDirectory = () => {
-  if (fs.existsSync(path.join(process.cwd(), "AC_APPLICATION_CODE"))) {
-    return path.join(process.cwd(), "AC_APPLICATION_CODE");
-  } else {
-    return process.cwd();
-  }
-};
-
 export const setCurrentPlugin = plugin => {
   const { set } = configDB();
   return set("anyCloud.plugin", plugin);
 };
 
-export const pathToPlugin = pluginName =>
-  `${applicationDirectory()}/node_modules/${pluginName}`;
+export const pathToPlugin = pluginName => {
+  if (process.cwd().includes("AC_APPLICATION_CODE")) {
+    return process.cwd().split("AC_APPLICATION_CODE")[0];
+  }
+  if (fs.existsSync(path.join(process.cwd(), "AC_APPLICATION_CODE"))) {
+    return process.cwd();
+  }
+  return `${process.cwd()}/node_modules/${pluginName}`;
+};
 
 export const cliHandlerPath = (pathToPlugin, handlerName) =>
   `${pathToPlugin}/lib/cli/${handlerName}`;
