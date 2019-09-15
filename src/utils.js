@@ -24,7 +24,7 @@ export const currentPluginSync = () => {
 
 export const applicationDirectory = () => {
   if (fs.existsSync(path.join(process.cwd(), "AC_APPLICATION_CODE"))) {
-    return path.join(process.cwd(), "node_modules", "app");
+    return path.join(process.cwd(), "AC_APPLICATION_CODE");
   } else {
     return process.cwd();
   }
