@@ -3,23 +3,35 @@ import path from "path";
 
 export const toPluginName = plugin => `@any-cloud/${plugin}`;
 
+export const defaultPluginFromPackageJson = () => {
+  const info = require(path.join(process.cwd(), "package.json"));
+  if (info.name.indexOf("@any-cloud") === 0) {
+    return info.name;
+  }
+  return Object.keys(info.dependencies).find(
+    name =>
+      name.indexOf("@any-cloud") === 0 &&
+      !["@any-cloud/cli", "@any-cloud/core"].includes(name)
+  );
+};
 export const currentPlugin = async () => {
-  const { get } = configDB();
-  return toPluginName(await get("anyCloud.plugin"));
+  const configRoot = pathToPlugin(".cache");
+  if (fs.existsSync(configRoot)) {
+    const { get } = configDB();
+    return toPluginName(await get("anyCloud.plugin"));
+  }
+  return defaultPluginFromPackageJson();
 };
 export const currentPluginSync = () => {
   const configRoot = pathToPlugin(".cache");
-  fs.mkdirSync(configRoot, { recursive: true });
-
-  let currentConfig;
-  try {
-    currentConfig = require(path.join(configRoot, "anyCloud"));
-  } catch {
-    currentConfig = {
-      plugin: "local"
-    };
+  if (fs.existsSync(configRoot)) {
+    let currentConfig;
+    try {
+      currentConfig = require(path.join(configRoot, "anyCloud"));
+      return toPluginName(currentConfig.plugin);
+    } catch {}
   }
-  return toPluginName(currentConfig.plugin);
+  return defaultPluginFromPackageJson();
 };
 
 export const setCurrentPlugin = plugin => {
