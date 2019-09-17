@@ -59,6 +59,18 @@ export const requirePluginLib = name => {
   return require(libPath(pathToPlugin(currentPluginSync()), name));
 };
 
+export const appDirPath = () => {
+  const stagingAppDir = path.join(process.cwd(), "AC_APPLICATION_CODE");
+  if (fs.existsSync(stagingAppDir)) {
+    return stagingAppDir;
+  }
+  return process.cwd();
+};
+
+export const requireAppLib = name => {
+  return require(appDirPath())[name];
+};
+
 export const currentPluginCLIHandlerPath = (name = "") => {
   return cliHandlerPath(pathToPlugin(currentPluginSync()), name);
 };
