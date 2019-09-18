@@ -26,24 +26,37 @@ const key = (...parts) => {
 
 const batch = () => {
   let batchCache = {};
+  let updated = new Set();
   const { get, getAll, set, remove } = pluginDatabase;
   return {
     key,
     unwrapKey,
-    get: key => {
+    get: async key => {
       const keyString = unwrapKey(key);
       batchCache[keyString] = batchCache[keyString] || get(key);
-      return batchCache[keyString];
+      return { ...(await batchCache[keyString]) };
     },
-    getAll: key => {
+    getAll: async key => {
       const keyString = unwrapKey(key);
       batchCache[keyString] = batchCache[keyString] || getAll(key);
-      return batchCache[keyString];
+      return (await batchCache[keyString]).map(item => ({ ...item }));
     },
-    set: set,
+    set: (aKey, value) => {
+      const keyString = unwrapKey(aKey);
+      batchCache[keyString] = Promise.resolve(value);
+      updated.add(keyString);
+      return Promise.resolve(true);
+    },
     remove: remove,
     reset: () => console.error("tried to reset database inside a batch"),
-    commit: () => console.log("commiting database batch")
+    commit: () => {
+      console.log("commiting database batch");
+      return Promise.all(
+        Array.from(updated).map(async keyString =>
+          set(key(keyString), await batchCache[keyString])
+        )
+      );
+    }
   };
 };
 
