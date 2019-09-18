@@ -7,7 +7,7 @@ export const queue = requirePluginLib("queue");
 
 export const init = requireAppLib("init");
 export const cron = requireAppLib("cron");
-export const worker = requireAppLib("worker");
+export const workers = requireAppLib("workers");
 
 export const http = () => {
   const { http: pluginHttp } = requirePluginLib("http");
