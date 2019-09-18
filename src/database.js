@@ -4,8 +4,18 @@ const { keySep, ...pluginDatabase } = requirePluginLib("database");
 
 const ENCAPSULATION_CHECK = "asasdfl9kjdfsgid";
 
+const isKey = ({ key, encapsulation }) => {
+  if (!key) {
+    return false;
+  }
+  if (!encapsulation || encapsulation !== ENCAPSULATION_CHECK) {
+    return false;
+  }
+  return true;
+};
+
 const unwrapKey = ({ key, encapsulation }) => {
-  if (false && !key) {
+  if (!key) {
     throw new Error("tried to use database with empty key");
   }
   if (!encapsulation || encapsulation !== ENCAPSULATION_CHECK) {
@@ -28,8 +38,8 @@ const batch = () => {
   let batchCache = {};
   let updated = new Set();
   const TO_BE_REMOVED = { desc: "this object will be removed" };
-  const { get, getAll, set, remove } = pluginDatabase;
-  return {
+  const { get, getAllKeys, set, remove } = pluginDatabase;
+  const batchResponse = {
     key,
     unwrapKey,
     get: async key => {
@@ -38,7 +48,15 @@ const batch = () => {
       if (batchCache[keyString] === TO_BE_REMOVED) return;
       return { ...(await batchCache[keyString]) };
     },
-    getAll: getAll,
+    getAllKeys,
+    getAll: async partialKeyOrKeys => {
+      let keys = partialKeyOrKeys;
+      if (isKey(partialKeyOrKeys)) {
+        keys = await getAllKeys(partialKeyOrKeys);
+      }
+      const result = await Promise.all(keys.map(k => batchResponse.get(k)));
+      return result.filter(x => x !== undefined);
+    },
     set: (aKey, value) => {
       const keyString = unwrapKey(aKey);
       batchCache[keyString] = Promise.resolve(value);
@@ -64,6 +82,7 @@ const batch = () => {
       );
     }
   };
+  return batchResponse;
 };
 
 export default {
