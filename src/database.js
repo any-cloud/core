@@ -38,7 +38,7 @@ const batch = () => {
   let batchCache = {};
   let updated = new Set();
   const TO_BE_REMOVED = { desc: "this object will be removed" };
-  const { get, getAllKeys, set, remove } = pluginDatabase;
+  const { get, getAll, set, remove } = pluginDatabase;
   const batchResponse = {
     key,
     unwrapKey,
@@ -48,14 +48,15 @@ const batch = () => {
       if (batchCache[keyString] === TO_BE_REMOVED) return;
       return { ...(await batchCache[keyString]) };
     },
-    getAllKeys,
-    getAll: async partialKeyOrKeys => {
-      let keys = partialKeyOrKeys;
-      if (isKey(partialKeyOrKeys)) {
-        keys = await getAllKeys(partialKeyOrKeys);
-      }
-      const result = await Promise.all(keys.map(k => batchResponse.get(k)));
-      return result.filter(x => x !== undefined);
+    getAll: async partialKey => {
+      const keyString = unwrapKey(partialKey);
+      batchCache[keyString] =
+        batchCache[keyString] || (await getAll(partialKey));
+      return Promise.all(
+        Object.keys(batchCache)
+          .filter(k => k.indexOf(keyString) === 0)
+          .map(k => batchResponse.get(key(k)))
+      );
     },
     set: (aKey, value) => {
       const keyString = unwrapKey(aKey);
