@@ -4,16 +4,6 @@ const { keySep, ...pluginDatabase } = requirePluginLib("database");
 
 const ENCAPSULATION_CHECK = "asasdfl9kjdfsgid";
 
-const isKey = ({ key, encapsulation }) => {
-  if (!key) {
-    return false;
-  }
-  if (!encapsulation || encapsulation !== ENCAPSULATION_CHECK) {
-    return false;
-  }
-  return true;
-};
-
 const unwrapKey = ({ key, encapsulation }) => {
   if (!key) {
     throw new Error("tried to use database with empty key");
@@ -36,6 +26,7 @@ const key = (...parts) => {
 
 const batch = () => {
   let batchCache = {};
+  let getAllCache = {};
   let updated = new Set();
   const TO_BE_REMOVED = { desc: "this object will be removed" };
   const { get, getAll, set, remove } = pluginDatabase;
@@ -50,13 +41,14 @@ const batch = () => {
     },
     getAll: async partialKey => {
       const keyString = unwrapKey(partialKey);
-      batchCache[keyString] =
-        batchCache[keyString] || (await getAll(partialKey));
-      return Promise.all(
+      getAllCache[keyString] =
+        getAllCache[keyString] || (await getAll(partialKey));
+      const results = await Promise.all(
         Object.keys(batchCache)
           .filter(k => k.indexOf(keyString) === 0)
-          .map(k => batchResponse.get(key(k)))
+          .map(k => batchResponse.get(key(...k.split(keySep))))
       );
+      return results.filter(x => x !== undefined);
     },
     set: (aKey, value) => {
       const keyString = unwrapKey(aKey);
