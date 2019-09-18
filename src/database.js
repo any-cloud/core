@@ -27,6 +27,7 @@ const key = (...parts) => {
 const batch = () => {
   let batchCache = {};
   let updated = new Set();
+  const TO_BE_REMOVED = { desc: "this object will be removed" };
   const { get, getAll, set, remove } = pluginDatabase;
   return {
     key,
@@ -34,27 +35,32 @@ const batch = () => {
     get: async key => {
       const keyString = unwrapKey(key);
       batchCache[keyString] = batchCache[keyString] || get(key);
+      if (batchCache[keyString] === TO_BE_REMOVED) return;
       return { ...(await batchCache[keyString]) };
     },
-    getAll: async key => {
-      const keyString = unwrapKey(key);
-      batchCache[keyString] = batchCache[keyString] || getAll(key);
-      return (await batchCache[keyString]).map(item => ({ ...item }));
-    },
+    getAll: getAll,
     set: (aKey, value) => {
       const keyString = unwrapKey(aKey);
       batchCache[keyString] = Promise.resolve(value);
       updated.add(keyString);
       return Promise.resolve(true);
     },
-    remove: remove,
+    remove: aKey => {
+      const keyString = unwrapKey(aKey);
+      batchCache[keyString] = TO_BE_REMOVED;
+      updated.add(keyString);
+      return Promise.resolve(true);
+    },
     reset: () => console.error("tried to reset database inside a batch"),
     commit: () => {
       console.log("commiting database batch");
       return Promise.all(
-        Array.from(updated).map(async keyString =>
-          set(key(keyString), await batchCache[keyString])
-        )
+        Array.from(updated).map(async keyString => {
+          const result = await batchCache[keyString];
+          const aKey = key(keyString);
+          if (result === TO_BE_REMOVED) remove(aKey);
+          return set(aKey, result);
+        })
       );
     }
   };
