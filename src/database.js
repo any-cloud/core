@@ -29,20 +29,25 @@ const batch = () => {
   let getAllCache = {};
   let updated = new Set();
   const TO_BE_REMOVED = { desc: "this object will be removed" };
-  const { get, getAll, set, remove } = pluginDatabase;
+  const { get, getAllKeys, getAll, set, remove } = pluginDatabase;
   const batchResponse = {
     key,
     unwrapKey,
-    get: async key => {
+    get: async (key, opts) => {
       const keyString = unwrapKey(key);
-      batchCache[keyString] = batchCache[keyString] || get(key);
+      batchCache[keyString] = batchCache[keyString] || get(key, opts);
       if (batchCache[keyString] === TO_BE_REMOVED) return;
       return { ...(await batchCache[keyString]) };
     },
+    getAllKeys,
     getAll: async partialKey => {
       const keyString = unwrapKey(partialKey);
-      getAllCache[keyString] =
-        getAllCache[keyString] || (await getAll(partialKey));
+      if (!getAllCache[keyString]) {
+        getAllCache[keyString] = await getAllKeys(partialKey);
+        await Promise.all(
+          getAllCache[keyString].map(k => batchResponse.get(k))
+        );
+      }
       const results = await Promise.all(
         Object.keys(batchCache)
           .filter(k => k.indexOf(keyString) === 0)
@@ -63,9 +68,8 @@ const batch = () => {
       return Promise.resolve(true);
     },
     reset: () => console.error("tried to reset database inside a batch"),
-    commit: () => {
-      console.log("commiting database batch");
-      return Promise.all(
+    commit: async () => {
+      const result = await Promise.all(
         Array.from(updated).map(async keyString => {
           const result = await batchCache[keyString];
           const aKey = key(keyString);
@@ -73,14 +77,20 @@ const batch = () => {
           return set(aKey, result);
         })
       );
+      updated = new Set();
+      return result;
     }
   };
   return batchResponse;
 };
 
+export const commit = () =>
+  console.warn("tried to commit without batch (nothing to do)");
+
 export default {
   key,
   unwrapKey,
   batch,
+  commit,
   ...pluginDatabase
 };
