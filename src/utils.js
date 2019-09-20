@@ -3,27 +3,36 @@ import path from "path";
 
 export const toPluginName = plugin => `@any-cloud/${plugin}`;
 
+export const isPlugin = name =>
+  !["@any-cloud/cli", "@any-cloud/core"].includes(name);
+
 export const defaultPluginFromPackageJson = () => {
   const info = require(path.join(process.cwd(), "package.json"));
-  if (info.name.indexOf("@any-cloud") === 0) {
+  if (info.name.indexOf("@any-cloud") === 0 && isPlugin(info.name)) {
     return info.name;
   }
-  return Object.keys(info.dependencies).find(
-    name =>
-      name.indexOf("@any-cloud") === 0 &&
-      !["@any-cloud/cli", "@any-cloud/core"].includes(name)
+  const dep = Object.keys(info.dependencies).find(
+    name => name.indexOf("@any-cloud") === 0 && isPlugin(name)
   );
+  if (dep) return dep;
+  const devDep = Object.keys(info.devDependencies).find(
+    name => name.indexOf("@any-cloud") === 0 && isPlugin(name)
+  );
+  if (devDep) return devDep;
 };
 export const currentPlugin = async () => {
   const configRoot = pathToPlugin(".cache");
+  let result;
   if (fs.existsSync(configRoot)) {
     const { get } = configDB();
-    return toPluginName(await get("anyCloud.plugin"));
+    result = toPluginName(await get("anyCloud.plugin"));
   }
-  return defaultPluginFromPackageJson();
+  result = result || defaultPluginFromPackageJson();
+  return result;
 };
 export const currentPluginSync = () => {
   const configRoot = pathToPlugin(".cache");
+  let result;
   if (fs.existsSync(configRoot)) {
     let currentConfig;
     try {
@@ -31,7 +40,8 @@ export const currentPluginSync = () => {
       return toPluginName(currentConfig.plugin);
     } catch {}
   }
-  return defaultPluginFromPackageJson();
+  result = result || defaultPluginFromPackageJson();
+  return result;
 };
 
 export const setCurrentPlugin = plugin => {

@@ -4,21 +4,28 @@ const { keySep, ...pluginDatabase } = requirePluginLib("database");
 
 const ENCAPSULATION_CHECK = "asasdfl9kjdfsgid";
 
-const unwrapKey = ({ key, encapsulation }) => {
-  if (!key) {
+const unwrapKey = aKey => {
+  const encapsulationErrorMessage = "key needs to be built with key util";
+  if (!aKey) {
     throw new Error("tried to use database with empty key");
   }
+  if (typeof aKey === "string") {
+    throw new Error(encapsulationErrorMessage);
+  }
+  const { key, encapsulation } = aKey;
   if (!encapsulation || encapsulation !== ENCAPSULATION_CHECK) {
-    throw new Error("key needs to be built with key util");
+    throw new Error(encapsulationErrorMessage);
   }
   return key;
 };
 
-const key = (...parts) => {
-  parts.forEach(k => {
-    if (false && !key) {
+const key = (...keyParts) => {
+  let parts = [];
+  keyParts.forEach(k => {
+    if (!k) {
       throw new Error("tried to use database with empty key");
     }
+    parts = [...parts, ...k.split(keySep)];
   });
   const result = parts.join(keySep);
   return { key: result, parts, encapsulation: ENCAPSULATION_CHECK };
@@ -37,7 +44,14 @@ const batch = () => {
       const keyString = unwrapKey(key);
       batchCache[keyString] = batchCache[keyString] || get(key, opts);
       if (batchCache[keyString] === TO_BE_REMOVED) return;
-      return { ...(await batchCache[keyString]) };
+      const result = await batchCache[keyString];
+      if (typeof result === "object") {
+        return { ...result };
+      }
+      if (result && Array.isArray(result)) {
+        return [...result];
+      }
+      return result;
     },
     getAllKeys,
     getAll: async partialKey => {
@@ -63,6 +77,8 @@ const batch = () => {
     },
     remove: aKey => {
       const keyString = unwrapKey(aKey);
+      if (batchCache[keyString] === TO_BE_REMOVED)
+        return Promise.resolve(false);
       batchCache[keyString] = TO_BE_REMOVED;
       updated.add(keyString);
       return Promise.resolve(true);
@@ -73,11 +89,11 @@ const batch = () => {
         Array.from(updated).map(async keyString => {
           const result = await batchCache[keyString];
           const aKey = key(keyString);
-          if (result === TO_BE_REMOVED) remove(aKey);
+          if (result === TO_BE_REMOVED) return remove(aKey);
           return set(aKey, result);
         })
       );
-      updated = new Set();
+      updated.clear();
       return result;
     }
   };
