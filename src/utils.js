@@ -5,17 +5,30 @@ export const toPluginName = plugin => `@any-cloud/${plugin}`;
 
 export const isPlugin = name =>
   !["@any-cloud/cli", "@any-cloud/core"].includes(name);
+const packageInfoFromDir = aPath => {
+  return require(path.join(aPath, "package.json"));
+};
+const chokeUpPath = path =>
+  ["node_modules", "AC_APPLICATION_CODE"].reduce(
+    (acc, cur) => acc.split(cur)[0],
+    path || process.cwd()
+  );
 
 export const defaultPluginFromPackageJson = () => {
-  const info = require(path.join(process.cwd(), "package.json"));
+  const rootPath = chokeUpPath();
+  const rootPathPackageName = packageInfoFromDir(rootPath).name;
+  if (isPlugin(rootPathPackageName)) {
+    return rootPathPackageName;
+  }
+  const info = packageInfoFromDir(process.cwd());
   if (info.name.indexOf("@any-cloud") === 0 && isPlugin(info.name)) {
     return info.name;
   }
-  const dep = Object.keys(info.dependencies).find(
+  const dep = Object.keys(info.dependencies || {}).find(
     name => name.indexOf("@any-cloud") === 0 && isPlugin(name)
   );
   if (dep) return dep;
-  const devDep = Object.keys(info.devDependencies).find(
+  const devDep = Object.keys(info.devDependencies || {}).find(
     name => name.indexOf("@any-cloud") === 0 && isPlugin(name)
   );
   if (devDep) return devDep;
@@ -50,8 +63,9 @@ export const setCurrentPlugin = plugin => {
 };
 
 export const pathToPlugin = pluginName => {
-  if (process.cwd().includes("AC_APPLICATION_CODE")) {
-    return process.cwd().split("AC_APPLICATION_CODE")[0];
+  const rootPath = chokeUpPath();
+  if (isPlugin(packageInfoFromDir(rootPath).name)) {
+    return rootPath;
   }
   if (fs.existsSync(path.join(process.cwd(), "AC_APPLICATION_CODE"))) {
     return process.cwd();
