@@ -4,6 +4,7 @@ import path from "path";
 export const toPluginName = plugin => `@any-cloud/${plugin}`;
 
 export const isPlugin = name =>
+  name.indexOf("@any-cloud") === 0 &&
   !["@any-cloud/cli", "@any-cloud/core"].includes(name);
 const packageInfoFromDir = aPath => {
   return require(path.join(aPath, "package.json"));
@@ -13,6 +14,9 @@ const chokeUpPath = path =>
     (acc, cur) => acc.split(cur)[0],
     path || process.cwd()
   );
+const nodeModulePath = (rt, moduleName) =>
+  path.join(rt, "node_modules", moduleName);
+const configRoot = () => nodeModulePath(chokeUpPath(), ".cache");
 
 export const defaultPluginFromPackageJson = () => {
   const rootPath = chokeUpPath();
@@ -21,40 +25,31 @@ export const defaultPluginFromPackageJson = () => {
     return rootPathPackageName;
   }
   const info = packageInfoFromDir(process.cwd());
-  if (info.name.indexOf("@any-cloud") === 0 && isPlugin(info.name)) {
+  if (isPlugin(info.name)) {
     return info.name;
   }
-  const dep = Object.keys(info.dependencies || {}).find(
-    name => name.indexOf("@any-cloud") === 0 && isPlugin(name)
-  );
+  const dep = Object.keys(info.dependencies || {}).find(name => isPlugin(name));
   if (dep) return dep;
-  const devDep = Object.keys(info.devDependencies || {}).find(
-    name => name.indexOf("@any-cloud") === 0 && isPlugin(name)
+  const devDep = Object.keys(info.devDependencies || {}).find(name =>
+    isPlugin(name)
   );
   if (devDep) return devDep;
 };
-export const currentPlugin = async () => {
-  const configRoot = pathToPlugin(".cache");
-  let result;
-  if (fs.existsSync(configRoot)) {
-    const { get } = configDB();
-    result = toPluginName(await get("anyCloud.plugin"));
-  }
-  result = result || defaultPluginFromPackageJson();
-  return result;
-};
 export const currentPluginSync = () => {
-  const configRoot = pathToPlugin(".cache");
+  const configRt = configRoot();
   let result;
-  if (fs.existsSync(configRoot)) {
+  if (fs.existsSync(configRt)) {
     let currentConfig;
     try {
-      currentConfig = require(path.join(configRoot, "anyCloud"));
-      return toPluginName(currentConfig.plugin);
+      currentConfig = require(path.join(configRt, "anyCloud"));
+      result = toPluginName(currentConfig.plugin);
     } catch {}
   }
   result = result || defaultPluginFromPackageJson();
   return result;
+};
+export const currentPlugin = async () => {
+  return currentPluginSync();
 };
 
 export const setCurrentPlugin = plugin => {
@@ -63,21 +58,21 @@ export const setCurrentPlugin = plugin => {
 };
 
 export const pathToPlugin = pluginName => {
-  const rootPath = chokeUpPath();
-  if (isPlugin(packageInfoFromDir(rootPath).name)) {
-    return rootPath;
-  }
-  if (fs.existsSync(path.join(process.cwd(), "AC_APPLICATION_CODE"))) {
-    return process.cwd();
-  }
-  return `${process.cwd()}/node_modules/${pluginName}`;
+  const chokePath = chokeUpPath();
+  const cwd = process.cwd();
+  return [
+    chokePath,
+    cwd,
+    nodeModulePath(chokePath, pluginName),
+    nodeModulePath(cwd, pluginName)
+  ].find(p => packageInfoFromDir(p).name === pluginName);
 };
 
 export const cliHandlerPath = (pathToPlugin, handlerName) =>
-  `${pathToPlugin}/lib/cli/${handlerName}`;
+  path.join(pathToPlugin, "lib", "cli", handlerName);
 
 export const libPath = (pathToPlugin, libName) =>
-  `${pathToPlugin}/lib/include/${libName}`;
+  path.join(pathToPlugin, "lib", "include", libName);
 
 export const requirePluginLib = name => {
   return require(libPath(pathToPlugin(currentPluginSync()), name));
@@ -105,9 +100,9 @@ export const requireCLIHandler = async name => {
 };
 
 export const configDB = () => {
-  const configRoot = pathToPlugin(".cache");
-  fs.mkdirSync(configRoot, { recursive: true });
-  return require("json-fs-db")(configRoot);
+  const configRt = configRoot();
+  fs.mkdirSync(configRt, { recursive: true });
+  return require("json-fs-db")(configRt);
 };
 
 export default {

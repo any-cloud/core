@@ -1,4 +1,3 @@
-import db from "./database";
 import { requirePluginLib, requireAppLib } from "./utils";
 
 export const queue = requirePluginLib("queue");
@@ -13,6 +12,6 @@ export const http = () => {
   return appHttp(pluginHttp);
 };
 
-export const database = db;
+export { default as database } from "./database";
 
 export { default as utils } from "./utils";
