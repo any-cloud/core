@@ -1,6 +1,6 @@
 {
   "name": "@any-cloud/core",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "core library for runtime abstractions",
   "main": "lib/index.js",
   "repository": "git@github.com:any-cloud/core.git",
