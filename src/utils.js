@@ -9,10 +9,10 @@ export const isPlugin = name =>
 const packageInfoFromDir = aPath => {
   return require(path.join(aPath, "package.json"));
 };
-const chokeUpPath = path =>
+export const chokeUpPath = path =>
   ["node_modules", "AC_APPLICATION_CODE"].reduce(
     (acc, cur) => acc.split(cur)[0],
-    path || process.cwd()
+    path || process.env.ANY_CLOUD_PATH || process.cwd()
   );
 const nodeModulePath = (rt, moduleName) =>
   path.join(rt, "node_modules", moduleName);
@@ -105,7 +105,34 @@ export const configDB = () => {
   return require("json-fs-db")(configRt);
 };
 
+export const debugInfo = () => {
+  const result = {
+    toPluginName: toPluginName("<plugin>"),
+    packageInfoFromDir: packageInfoFromDir(process.cwd()),
+    chokeUpPath: chokeUpPath(),
+    nodeModulePath: nodeModulePath("<root>", "<moduleName>"),
+    configRoot: configRoot(),
+    defaultPluginFromPackageJson: defaultPluginFromPackageJson(),
+    currentPluginSync: currentPluginSync(),
+    currentPlugin: currentPlugin(),
+    appDirPath: appDirPath(),
+    cliHandlerPath: cliHandlerPath("<pathToPlugin>", "<handlerName>"),
+    libPath: libPath("<pathToPlugin>", "<libName>"),
+    currentPluginCLIHandlerPath: currentPluginCLIHandlerPath("<name>")
+  };
+
+  try {
+    result.pathToPluginLocal = pathToPlugin("@any-cloud/local");
+  } catch (e) {}
+  try {
+    result.pathToPluginFirebase = pathToPlugin("@any-cloud/firebase");
+  } catch (e) {}
+  return result;
+};
+
 export default {
+  chokeUpPath,
+  debugInfo,
   toPluginName,
   isPlugin,
   defaultPluginFromPackageJson,
