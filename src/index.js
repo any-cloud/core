@@ -1,7 +1,5 @@
-import * as allUtils from "./utils";
 import db from "./database";
-
-const { requirePluginLib, requireAppLib } = allUtils;
+import { requirePluginLib, requireAppLib } from "./utils";
 
 export const queue = requirePluginLib("queue");
 
@@ -17,4 +15,4 @@ export const http = () => {
 
 export const database = db;
 
-export const utils = allUtils;
+export { default as utils } from "./utils";

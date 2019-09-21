@@ -95,3 +95,21 @@ export const configDB = () => {
   fs.mkdirSync(configRoot, { recursive: true });
   return require("json-fs-db")(configRoot);
 };
+
+export default {
+  toPluginName,
+  isPlugin,
+  defaultPluginFromPackageJson,
+  currentPlugin,
+  currentPluginSync,
+  setCurrentPlugin,
+  pathToPlugin,
+  cliHandlerPath,
+  libPath,
+  requirePluginLib,
+  appDirPath,
+  requireAppLib,
+  currentPluginCLIHandlerPath,
+  requireCLIHandler,
+  configDB
+};
